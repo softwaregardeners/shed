@@ -3,7 +3,7 @@ import * as B from "./Boolean.js"
 import { pipe } from "./Function.js"
 import * as Maybe from "./Maybe.js"
 
-describe("Constructors", () => {
+describe("Constructors + Predicates", () => {
     describe("nothing", () => {
         it("is not a Just", () =>
             pipe(Maybe.nothing, Maybe.isJust, B.not, assert))
