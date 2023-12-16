@@ -4,7 +4,7 @@ export type Just<A> = { readonly _tag: "Just"; readonly value: A }
 export type Nothing = { readonly _tag: "Nothing" }
 
 /*
- * Guards
+ * Predicates
  */
 export const isJust = <A>(v: t<A>): v is Just<A> => v._tag === "Just"
 export const isNothing = <A>(v: t<A>): v is Nothing => v._tag === "Nothing"

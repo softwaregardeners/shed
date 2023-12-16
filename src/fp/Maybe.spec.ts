@@ -15,9 +15,8 @@ describe("just", () => {
 })
 describe("fromNullable", () => {
     describe.each([[undefined], [null]] as const)("[%s]", value => {
-        it("returns a nothing", () => {
-            pipe(value, Maybe.fromNullable, Maybe.isNothing, assert)
-        })
+        it("returns a nothing", () =>
+            pipe(value, Maybe.fromNullable, Maybe.isNothing, assert))
     })
 })
 
