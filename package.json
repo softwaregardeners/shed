@@ -1,5 +1,5 @@
 {
-  "name": "@sg/stdlib",
+  "name": "@sg/shed",
   "type": "module",
   "scripts": {
     "test": "vitest"
