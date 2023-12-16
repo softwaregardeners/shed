@@ -18,7 +18,6 @@ export const fromNullable = <A>(v: A | null | undefined): t<A> => {
     const b = v ?? null
     return b === null ? nothing : of(b)
 }
-export const from = fromNullable
 
 /*
  * Destructors
@@ -26,7 +25,6 @@ export const from = fromNullable
 export const toNullable = <A>(v: t<A>): A | null => (isJust(v) ? v.value : null)
 export const toUndefined = <A>(v: t<A>): A | undefined =>
     isJust(v) ? v.value : undefined
-export const to = toNullable
 
 /*
  * Applicative
