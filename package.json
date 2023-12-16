@@ -5,7 +5,8 @@
     "test": "vitest"
   },
   "exports": {
-    ".": "./dist/fp/Function.js"
+    ".": "./dist/fp/Function.js",
+    "./boolean": "./dist/fp/Boolean.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.4.1",
