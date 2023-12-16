@@ -4,6 +4,9 @@
   "scripts": {
     "test": "vitest"
   },
+  "exports": {
+    ".": "./dist/fp/Function.js"
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.4.1",
     "type-fest": "^4.8.3",
