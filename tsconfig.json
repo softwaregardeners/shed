@@ -1,4 +1,8 @@
 {
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.js",
+  ],
   "compilerOptions": {
     "esModuleInterop": true,
     "skipLibCheck": true,
