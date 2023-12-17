@@ -4,13 +4,18 @@ export interface t<A> {
 }
 
 /**
+ * Constructors
+ */
+export const from = <A>(fn: () => A): t<A> => {
+    const sync = () => fn
+    sync._tag = "Sync" as const
+    return sync as t<A>
+}
+
+/**
  * Applicative
  */
-export const of = <A>(v: A): t<A> => {
-    const sync = () => v
-    sync._tag = "Sync" as const
-    return sync
-}
+export const of = <A>(v: A): t<A> => from(() => v)
 
 /**
  * Apply

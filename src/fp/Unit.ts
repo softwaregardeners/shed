@@ -1,6 +1,7 @@
 import * as Async from "./Async.js"
 import { pipe } from "./Function.js"
 import * as Result from "./Result.js"
+import * as Sync from "./Sync.js"
 
 export interface t<R, E, A> {
     (r: R): Async.t<Result.t<E, A>>
@@ -11,22 +12,33 @@ export interface t<R, E, A> {
  * Constructors
  */
 
-export const fromAsyncResult = <E, A, R = unknown>(
+const fromAsyncResult = <E, A, R = unknown>(
     a: Async.t<Result.t<E, A>>,
 ): t<R, E, A> => {
     const unit = (r: R) => a
     unit._tag = "Unit" as const
     return unit
 }
-export const fromResult = <E, A, R = unknown>(r: Result.t<E, A>): t<R, E, A> =>
-    fromAsyncResult(Async.of(r))
+
+export const from = <E, A>(
+    v: Result.t<E, A> | Sync.t<Result.t<E, A>> | Async.t<Result.t<E, A>>,
+): t<unknown, E, A> => {
+    switch (v._tag) {
+        case "Failure":
+        case "Success":
+            return fromAsyncResult(Async.of(v))
+        case "Async":
+            return fromAsyncResult(v)
+        case "Sync":
+            return fromAsyncResult(Async.fromPromise(Promise.resolve().then(v)))
+    }
+}
 
 /**
  * Applicative
  */
 
-export const of = <A>(v: A): t<unknown, never, A> =>
-    fromResult(Result.success(v))
+export const of = <A>(v: A): t<unknown, never, A> => from(Result.success(v))
 
 /**
  * Apply
@@ -50,7 +62,13 @@ export const map =
  * Chain
  */
 export function chain<R, F, A, B>(
-    fn: (v: A) => Result.t<F, B> | Async.t<Result.t<F, B>> | t<R, F, B>,
+    fn: (
+        v: A,
+    ) =>
+        | Result.t<F, B>
+        | Sync.t<Result.t<F, B>>
+        | Async.t<Result.t<F, B>>
+        | t<R, F, B>,
 ): <E>(v: t<R, E, A>) => t<R, E | F, B> {
     return <E>(v: t<R, E, A>): t<R, E | F, B> => {
         const unit = (r: R) =>
@@ -65,6 +83,8 @@ export function chain<R, F, A, B>(
                             return Async.of(mapped)
                         case "Async":
                             return mapped
+                        case "Sync":
+                            return Async.of(mapped())
                         case "Unit":
                             return mapped(r)
                     }
