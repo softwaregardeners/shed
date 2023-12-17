@@ -5,4 +5,4 @@ It takes inspiration and borrows (sometimes to the point of outright plagiarism)
 
 ## Words of warning
 
-It is not ready for production. Please do not use. You've been warned.
+It is not ready for production. Please do not use. You've been warned. I've pointed you to other libraries, use those!
