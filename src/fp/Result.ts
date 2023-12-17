@@ -29,10 +29,11 @@ export const fromMaybe =
 export function extract<A>(v: Success<A>): A
 export function extract<E>(v: Failure<E>): E
 export function extract<E, A>(v: t<E, A>): A | E
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-export function extract(v: t<any, any>): any {
+// This is duplicated because TS exports all declaration BUT the last one
+export function extract<E, A>(v: t<E, A>): A | E {
     return isSuccess(v) ? v.value : v.cause
 }
+
 /**
  * Applicative
  */
