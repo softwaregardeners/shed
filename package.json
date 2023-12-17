@@ -7,7 +7,8 @@
   "exports": {
     ".": "./dist/fp/Function.js",
     "./boolean": "./dist/fp/Boolean.js",
-    "./maybe": "./dist/fp/Maybe.js"
+    "./maybe": "./dist/fp/Maybe.js",
+    "./result": "./dist/fp/Result.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.p4.1",
