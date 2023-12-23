@@ -9,6 +9,7 @@
     ".": "./dist/fp/Function.js",
     "./async": "./dist/fp/Async.js",
     "./boolean": "./dist/fp/Boolean.js",
+    "./constants": "./dist/fp/Constants.js",
     "./maybe": "./dist/fp/Maybe.js",
     "./result": "./dist/fp/Result.js",
     "./sync": "./dist/fp/Sync.js",
