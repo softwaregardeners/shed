@@ -1,3 +1,6 @@
+import { flow } from "./Function.js"
+import * as Result from "./Result.js"
+
 export interface t<A> {
     (): Promise<A>
     readonly _tag: "Async"
@@ -6,11 +9,21 @@ export interface t<A> {
 /**
  * Constructors
  */
-export const fromPromise = <A>(v: Promise<A>): t<A> => {
-    const async = () => v
-    async._tag = "Async" as const
-    return async
+export const fromPromise = <A>(v: (() => Promise<A>) | Promise<A>): t<A> => {
+    function fn() {
+        if (typeof v === "function") return v()
+        return v
+    }
+    fn._tag = "Async" as const
+    return fn
 }
+
+const tryAsync = <E, A>(
+    v: () => Promise<A>,
+    onError: (e: unknown) => E,
+): t<Result.t<E, A>> =>
+    fromPromise(v().then(Result.of).catch(flow(onError, Result.failure)))
+export { tryAsync as try }
 
 /**
  * Applicative
