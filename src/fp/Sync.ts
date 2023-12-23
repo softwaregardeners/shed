@@ -1,3 +1,5 @@
+import * as Result from "./Result.js"
+
 export interface t<A> {
     (): A
     readonly _tag: "Sync"
@@ -11,6 +13,19 @@ export const from = <A>(fn: () => A): t<A> => {
     sync._tag = "Sync" as const
     return sync as t<A>
 }
+
+const trySync = <E, A>(
+    fn: () => A,
+    onError: (e: unknown) => E,
+): t<Result.t<E, A>> =>
+    from(() => {
+        try {
+            return Result.of(fn())
+        } catch (e) {
+            return Result.failure(onError(e))
+        }
+    })
+export { trySync as try }
 
 /**
  * Applicative
