@@ -1,5 +1,5 @@
 import * as Async from "./Async.js"
-import { pipe } from "./Function.js"
+import { flow, pipe } from "./Function.js"
 import * as Result from "./Result.js"
 import * as Sync from "./Sync.js"
 
@@ -32,6 +32,19 @@ export const from = <E, A>(
         case "Sync":
             return fromAsyncResult(Async.fromPromise(Promise.resolve().then(v)))
     }
+}
+
+export const tryCatch = <E, A>(
+    async: () => Promise<A>,
+    onError: (error: unknown) => E,
+): t<never, E, A> => {
+    const unit = () =>
+        pipe(
+            async().then(Result.success).catch(flow(onError, Result.failure)),
+            Async.fromPromise,
+        )
+    unit._tag = "Unit" as const
+    return unit
 }
 
 /**
