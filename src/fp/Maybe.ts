@@ -1,3 +1,5 @@
+import * as Transformer from "./Transformer.js"
+
 export type t<A> = Just<A> | Nothing
 
 export type Just<A> = { readonly _tag: "Just"; readonly value: A }
@@ -36,14 +38,14 @@ export const of: <A>(v: A) => t<A> = just
  */
 export const ap =
     <A>(v: t<A>) =>
-    <B>(fn: (v: A) => B): t<B> =>
+    <B>(fn: Transformer.t<A, B>): t<B> =>
         map(fn)(v)
 
 /*
  * Functor
  */
 export const map =
-    <A, B>(fn: (v: A) => B) =>
+    <A, B>(fn: Transformer.t<A, B>) =>
     (v: t<A>): t<B> =>
         isJust(v) ? of(fn(v.value)) : nothing
 
@@ -51,7 +53,7 @@ export const map =
  * Chain
  */
 export const chain =
-    <A, B>(fn: (v: A) => t<B>) =>
+    <A, B>(fn: Transformer.t<A, t<B>>) =>
     (v: t<A>): t<B> =>
         flatten(map(fn)(v))
 

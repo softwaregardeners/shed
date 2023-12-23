@@ -2,6 +2,7 @@ import * as Async from "./Async.js"
 import { absurd } from "./Function.js"
 import * as Result from "./Result.js"
 import * as Sync from "./Sync.js"
+import * as Transformer from "./Transformer.js"
 
 export type t<E, A> = Async.t<Result.t<E, A>>
 
@@ -36,14 +37,14 @@ export const of = <A>(v: A): t<never, A> => from(Result.success(v))
  */
 export const ap =
     <E, A>(v: t<E, A>) =>
-    <B>(fn: (v: A) => B): t<E, B> =>
+    <B>(fn: Transformer.t<A, B>): t<E, B> =>
         map(fn)(v)
 
 /**
  * Functor
  */
 export const map =
-    <A, B>(fn: (v: A) => B) =>
+    <A, B>(fn: Transformer.t<A, B>) =>
     <E>(v: t<E, A>): t<E, B> =>
         Async.map(Result.map(fn))(v)
 

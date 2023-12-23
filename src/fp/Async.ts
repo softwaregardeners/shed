@@ -1,5 +1,6 @@
 import { flow } from "./Function.js"
 import * as Result from "./Result.js"
+import * as Transformer from "./Transformer.js"
 
 export interface t<A> {
     (): Promise<A>
@@ -35,14 +36,14 @@ export const of = <A>(v: A): t<A> => fromPromise(Promise.resolve(v))
  */
 export const ap =
     <A>(v: t<A>) =>
-    <B>(fn: (v: A) => B): t<B> =>
+    <B>(fn: Transformer.t<A, B>): t<B> =>
         map(fn)(v)
 
 /*
  * Functor
  */
 export const map =
-    <A, B>(fn: (v: A) => B) =>
+    <A, B>(fn: Transformer.t<A, B>) =>
     (v: t<A>): t<B> =>
         fromPromise(v().then(fn))
 
@@ -50,7 +51,7 @@ export const map =
  * Chain
  */
 export const chain =
-    <A, B>(fn: (v: A) => t<B>) =>
+    <A, B>(fn: Transformer.t<A, t<B>>) =>
     (v: t<A>): t<B> =>
         flatten(map(fn)(v))
 

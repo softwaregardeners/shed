@@ -1,4 +1,5 @@
 import * as Maybe from "./Maybe.js"
+import * as Transformer from "./Transformer.js"
 
 export type t<E, A> = Success<A> | Failure<E>
 export type Success<A> = { _tag: "Success"; value: A }
@@ -44,21 +45,21 @@ export const of: <A>(v: A) => t<never, A> = success
  */
 export const ap =
     <E, A>(v: t<E, A>) =>
-    <B>(fn: (v: A) => B) =>
+    <B>(fn: Transformer.t<A, B>) =>
         map(fn)(v)
 
 /**
  * Functor
  */
 export const map =
-    <A, B>(fn: (a: A) => B) =>
+    <A, B>(fn: Transformer.t<A, B>) =>
     <E>(v: t<E, A>): t<E, B> =>
         isSuccess(v) ? success(fn(v.value)) : failure(v.cause)
 /**
  * Chain
  */
 export const chain =
-    <F, A, B>(fn: (v: A) => t<F, B>) =>
+    <F, A, B>(fn: Transformer.t<A, t<F, B>>) =>
     <E>(v: t<E, A>): t<E | F, B> =>
         flatten(map(fn)(v))
 
