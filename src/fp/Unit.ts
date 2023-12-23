@@ -1,64 +1,42 @@
 import * as Async from "./Async.js"
-import { flow, pipe } from "./Function.js"
+import { absurd } from "./Function.js"
 import * as Result from "./Result.js"
 import * as Sync from "./Sync.js"
 
-export interface t<R, E, A> {
-    (r: R): Async.t<Result.t<E, A>>
-    readonly _tag: "Unit"
-}
+export type t<E, A> = Async.t<Result.t<E, A>>
 
 /**
  * Constructors
  */
 
-const fromAsyncResult = <E, A, R = unknown>(
-    a: Async.t<Result.t<E, A>>,
-): t<R, E, A> => {
-    const unit = (r: R) => a
-    unit._tag = "Unit" as const
-    return unit
-}
-
 export const from = <E, A>(
     v: Result.t<E, A> | Sync.t<Result.t<E, A>> | Async.t<Result.t<E, A>>,
-): t<unknown, E, A> => {
+): t<E, A> => {
     switch (v._tag) {
         case "Failure":
         case "Success":
-            return fromAsyncResult(Async.of(v))
-        case "Async":
-            return fromAsyncResult(v)
+            return Async.of(v)
         case "Sync":
-            return fromAsyncResult(Async.fromPromise(Promise.resolve().then(v)))
+            return Async.fromPromise(Promise.resolve().then(v))
+        case "Async":
+            return v
+        default:
+            return absurd(v)
     }
-}
-
-export const tryCatch = <E, A>(
-    async: () => Promise<A>,
-    onError: (error: unknown) => E,
-): t<never, E, A> => {
-    const unit = () =>
-        pipe(
-            async().then(Result.success).catch(flow(onError, Result.failure)),
-            Async.fromPromise,
-        )
-    unit._tag = "Unit" as const
-    return unit
 }
 
 /**
  * Applicative
  */
 
-export const of = <A>(v: A): t<unknown, never, A> => from(Result.success(v))
+export const of = <A>(v: A): t<never, A> => from(Result.success(v))
 
 /**
  * Apply
  */
 export const ap =
-    <R, E, A>(v: t<R, E, A>) =>
-    <B>(fn: (v: A) => B): t<R, E, B> =>
+    <E, A>(v: t<E, A>) =>
+    <B>(fn: (v: A) => B): t<E, B> =>
         map(fn)(v)
 
 /**
@@ -66,44 +44,27 @@ export const ap =
  */
 export const map =
     <A, B>(fn: (v: A) => B) =>
-    <R, E>(v: t<R, E, A>): t<R, E, B> => {
-        const unit = (r: R) => pipe(v(r), Async.map(Result.map(fn)))
-        unit._tag = "Unit" as const
-        return unit
-    }
+    <E>(v: t<E, A>): t<E, B> =>
+        Async.map(Result.map(fn))(v)
+
 /**
  * Chain
  */
-export function chain<R, F, A, B>(
-    fn: (
-        v: A,
+export const chain =
+    <F, A, B>(
+        fn: (v: A) => Result.t<F, B> | Sync.t<Result.t<F, B>> | t<F, B>,
     ) =>
-        | Result.t<F, B>
-        | Sync.t<Result.t<F, B>>
-        | Async.t<Result.t<F, B>>
-        | t<R, F, B>,
-): <E>(v: t<R, E, A>) => t<R, E | F, B> {
-    return <E>(v: t<R, E, A>): t<R, E | F, B> => {
-        const unit = (r: R) =>
-            pipe(
-                v(r),
-                Async.chain((result): Async.t<Result.t<E | F, B>> => {
-                    if (Result.isFailure(result)) return Async.of(result)
-                    const mapped = fn(result.value)
-                    switch (mapped._tag) {
-                        case "Failure":
-                        case "Success":
-                            return Async.of(mapped)
-                        case "Async":
-                            return mapped
-                        case "Sync":
-                            return Async.of(mapped())
-                        case "Unit":
-                            return mapped(r)
-                    }
-                }),
-            )
-        unit._tag = "Unit" as const
-        return unit
-    }
-}
+    <E>(v: t<E, A>): t<E | F, B> =>
+        Async.fromPromise(async () => {
+            const mapped = map(fn)(v)
+            const value = await mapped()
+            if (Result.isFailure(value)) return value
+            const success = value.value
+            return from(success)()
+        })
+export const flatten = <E, F, A>(v: t<F, t<E, A>>): t<E | F, A> =>
+    Async.fromPromise(async () => {
+        const result = await v()
+        if (Result.isFailure(result)) return result
+        return result.value()
+    })
