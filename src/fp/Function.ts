@@ -17,12 +17,6 @@ export const identity = <A>(a: A): A => a
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const unsafeCoerce: <A, B>(a: A) => B = identity as any
 
-export const constTrue: () => true = () => true
-export const constFalse: () => false = () => false
-export const constNull: () => null = () => null
-export const constUndefined: () => undefined = () => undefined
-export const constVoid: () => void = () => undefined
-
 export const dual = <
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     DataLast extends (...args: Array<any>) => any,
